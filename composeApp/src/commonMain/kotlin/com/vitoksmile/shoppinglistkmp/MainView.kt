@@ -1,7 +1,11 @@
 package com.vitoksmile.shoppinglistkmp
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -24,7 +28,22 @@ private fun MainView(
     events: MainUiEvents,
     state: MainUiState,
 ) {
-    Scaffold {
+    val addItemState = rememberAddItemState(
+        onAdd = events::addNewItem,
+    )
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { addItemState.show() }
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                )
+            }
+        }
+    ) {
         when (state) {
             is MainUiState.Loading -> {
                 LoadingView()
@@ -48,5 +67,7 @@ private fun MainView(
             }
         }
     }
+
+    AddItemView(state = addItemState)
 }
 
