@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -62,6 +64,8 @@ fun rememberAddItemState(
 fun AddItemView(state: AddItemState) {
     require(state is AddItemStateImpl)
 
+    val focusRequester = remember { FocusRequester() }
+
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true,
@@ -74,6 +78,7 @@ fun AddItemView(state: AddItemState) {
     LaunchedEffect(state.isShowing) {
         if (state.isShowing) {
             sheetState.show()
+            focusRequester.requestFocus()
         } else {
             sheetState.hide()
         }
@@ -111,7 +116,8 @@ fun AddItemView(state: AddItemState) {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .focusRequester(focusRequester),
                         value = state.text,
                         onValueChange = { state.text = it },
                     )
