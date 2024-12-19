@@ -4,7 +4,7 @@ import com.vitoksmile.shoppinglistkmp.domain.Repository
 import com.vitoksmile.shoppinglistkmp.domain.model.Item
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -20,7 +20,8 @@ class RepositoryImpl : Repository {
     }
 
     override fun observe(): Flow<List<Item>> =
-        inMemoryCache.asStateFlow()
+        inMemoryCache
+            .map { it.sortedWith(comparator) }
 
     override suspend fun add(text: String): Result<Unit> = runCatching {
         inMemoryCache.update { cache ->
@@ -68,5 +69,15 @@ class RepositoryImpl : Repository {
             },
         )
     }
+
+    /**
+     * Display completed items at the end and other items sorted by date when
+     * there were created to show newest item on the top.
+     */
+    private val comparator: Comparator<Item> =
+        // Completed items at the end
+        compareBy<Item> { it.completedAt }
+            // Newest item on top
+            .thenByDescending { it.createdAt }
 
 }
