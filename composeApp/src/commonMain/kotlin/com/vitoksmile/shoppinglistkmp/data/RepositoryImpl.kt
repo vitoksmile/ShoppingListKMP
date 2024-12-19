@@ -43,10 +43,10 @@ class RepositoryImpl : Repository {
             val itemToComplete = cache.first { it.createdAt == item.createdAt }
 
             // Verify the item is not completed yet
-            require(itemToComplete.completedAt == null)
+            require(itemToComplete.completedAt == null) { "Item must not be completed yet" }
 
             val indexToUpdate = cache.indexOf(itemToComplete)
-            require(indexToUpdate >= 0)
+            require(indexToUpdate >= 0) { "Failed to find item in cache" }
             cache.toMutableList()
                 .apply {
                     set(indexToUpdate, item.copy(completedAt = now()))

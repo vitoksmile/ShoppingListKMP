@@ -7,5 +7,5 @@ data class Item(
     val createdAt: Instant,
     val completedAt: Instant?,
 ) {
-    val isCompleted: Boolean = completedAt == null
+    val isCompleted: Boolean = completedAt != null
 }

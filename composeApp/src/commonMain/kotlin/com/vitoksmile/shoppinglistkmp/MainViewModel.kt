@@ -13,8 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel : ViewModel(), MainUiEvents {
 
     private val repository: Repository = RepositoryImpl()
 
@@ -31,6 +32,30 @@ class MainViewModel : ViewModel() {
                 started = SharingStarted.Eagerly,
                 initialValue = MainUiState.Loading,
             )
+
+    override fun addNewItem(text: String) {
+        viewModelScope.launch {
+            repository.add(text)
+                .onSuccess { println("added $it") }
+                .onFailure { println("Failed to add $it") }
+        }
+    }
+
+    override fun completeItem(item: Item) {
+        viewModelScope.launch {
+            repository.complete(item)
+                .onSuccess { println("Completed $item") }
+                .onFailure { println("Failed to complete $it") }
+        }
+    }
+}
+
+@Immutable
+sealed interface MainUiEvents {
+
+    fun addNewItem(text: String)
+
+    fun completeItem(item: Item)
 }
 
 @Immutable

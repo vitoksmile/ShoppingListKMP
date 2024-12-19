@@ -1,5 +1,6 @@
 package com.vitoksmile.shoppinglistkmp
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,11 +29,17 @@ fun MainView() {
     val viewModel: MainViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    MainView(state = uiState)
+    MainView(
+        events = viewModel,
+        state = uiState,
+    )
 }
 
 @Composable
-private fun MainView(state: MainUiState) {
+private fun MainView(
+    events: MainUiEvents,
+    state: MainUiState,
+) {
     Scaffold {
         when (state) {
             is MainUiState.Loading -> {
@@ -50,6 +57,9 @@ private fun MainView(state: MainUiState) {
                 SuccessView(
                     modifier = Modifier.fillMaxSize(),
                     items = state.items,
+                    onComplete = {
+                        events.completeItem(it)
+                    },
                 )
             }
         }
@@ -92,16 +102,18 @@ private fun ErrorView(
 @Composable
 private fun SuccessView(
     items: ImmutableList<Item>,
+    onComplete: (Item) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(items = items, key = { it.createdAt.toString() }) {
+        items(items = items, key = { it.createdAt.toString() }) { item ->
             ItemView(
                 modifier = Modifier.fillMaxWidth(),
-                item = it,
+                item = item,
+                onComplete = { onComplete(item) },
             )
         }
     }
@@ -110,15 +122,20 @@ private fun SuccessView(
 @Composable
 private fun ItemView(
     item: Item,
+    onComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable(enabled = !item.isCompleted) { onComplete() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = item.isCompleted,
-            onCheckedChange = {},
+            enabled = !item.isCompleted,
+            onCheckedChange = { isChecked ->
+                if (isChecked) onComplete()
+            },
         )
 
         Column(
